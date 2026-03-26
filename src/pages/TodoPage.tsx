@@ -20,6 +20,11 @@ const TodoPage = ({ username, onLogout }: Props) => {
   const [loadingTodos, setLoadingTodos] = useState(true);
   const [addingTodo, setAddingTodo] = useState(false);
 
+  // Modal
+  const [modalTodoId, setModalTodoId] = useState<number | null>(null);
+  const [customMessage, setCustomMessage] = useState("Bravo, j'ai terminé cette tâche ! 💪");
+  const [sendingComplete, setSendingComplete] = useState(false);
+
   useEffect(() => {
     async function fetchTodos() {
       try {
@@ -67,12 +72,23 @@ const TodoPage = ({ username, onLogout }: Props) => {
     }
   }
 
-  async function completeTodo(id: number) {
+  // Ouvre le modal au lieu de compléter directement
+  function openCompleteModal(id: number) {
+    setModalTodoId(id);
+    setCustomMessage("Bravo, j'ai terminé cette tâche ! 💪");
+  }
+
+  async function confirmComplete() {
+    if (!modalTodoId) return;
+    setSendingComplete(true);
     try {
-      const updated = await api.completeTodo(id);
-      setTodos(todos.map((t) => (t.id === id ? (updated as Todo) : t)));
+      const updated = await api.completeTodo(modalTodoId, customMessage);
+      setTodos(todos.map((t) => (t.id === modalTodoId ? (updated as Todo) : t)));
+      setModalTodoId(null);
     } catch (err) {
       console.error("Erreur complétion todo:", err);
+    } finally {
+      setSendingComplete(false);
     }
   }
 
@@ -102,6 +118,8 @@ const TodoPage = ({ username, onLogout }: Props) => {
   const urgentCount = todos.filter((t) => t.priority === "Urgente").length;
   const mediumCount = todos.filter((t) => t.priority === "Moyenne").length;
   const lowCount = todos.filter((t) => t.priority === "Basse").length;
+
+  const modalTodo = todos.find((t) => t.id === modalTodoId);
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -179,7 +197,6 @@ const TodoPage = ({ username, onLogout }: Props) => {
               🟢 Basse ({lowCount})
             </button>
           </div>
-
           {selectedTodos.size > 0 && (
             <button
               onClick={finishSelected}
@@ -205,7 +222,7 @@ const TodoPage = ({ username, onLogout }: Props) => {
                     isSelected={selectedTodos.has(todo.id)}
                     onDelete={() => deleteTodo(todo.id)}
                     onEdit={editTodo}
-                    onComplete={completeTodo}
+                    onComplete={openCompleteModal}
                     onToggleSelect={toggleSelectTodo}
                   />
                 </li>
@@ -220,6 +237,54 @@ const TodoPage = ({ username, onLogout }: Props) => {
         </div>
 
       </div>
+
+      {/* Modal message personnalisé */}
+      {modalTodoId && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-base-300 rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4">
+
+            <h3 className="text-lg font-bold">🎉 Tâche terminée !</h3>
+
+            <p className="text-sm text-base-content/60">
+              Tu vas marquer <span className="text-primary font-medium">"{modalTodo?.text}"</span> comme terminée.
+              Un email de félicitations sera envoyé sur ton adresse mail.
+            </p>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Ton message personnel :</label>
+              <textarea
+                className="textarea w-full"
+                rows={3}
+                value={customMessage}
+                onChange={(e) => setCustomMessage(e.target.value)}
+                placeholder="Écris ton message de félicitations..."
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setModalTodoId(null)}
+                className="btn btn-ghost flex-1"
+                disabled={sendingComplete}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmComplete}
+                className="btn btn-primary flex-1"
+                disabled={sendingComplete}
+              >
+                {sendingComplete
+                  ? <span className="loading loading-spinner loading-sm" />
+                  : "Confirmer ✅"
+                }
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

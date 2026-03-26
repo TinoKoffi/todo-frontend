@@ -7,6 +7,7 @@ export type Todo = {
   text: string;
   priority: Priority;
   completed: boolean;
+  locked: boolean;
 };
 
 export type User = {

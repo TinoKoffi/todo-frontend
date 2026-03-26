@@ -40,26 +40,26 @@ export const api = {
     ),
 
   getTodos: () =>
-    request<{ id: number; text: string; priority: string; completed: boolean; userId: number }[]>(
+    request<{ id: number; text: string; priority: string; completed: boolean; locked: boolean; userId: number }[]>(
       "/todos"
     ),
 
   createTodo: (text: string, priority: string) =>
-    request<{ id: number; text: string; priority: string; completed: boolean; userId: number }>(
+    request<{ id: number; text: string; priority: string; completed: boolean; locked: boolean; userId: number }>(
       "/todos",
       { method: "POST", body: JSON.stringify({ text, priority }) }
     ),
 
   updateTodo: (id: number, text: string, priority: string) =>
-    request<{ id: number; text: string; priority: string; completed: boolean; userId: number }>(
+    request<{ id: number; text: string; priority: string; completed: boolean; locked: boolean; userId: number }>(
       `/todos/${id}`,
       { method: "PUT", body: JSON.stringify({ text, priority }) }
     ),
 
-  completeTodo: (id: number) =>
-    request<{ id: number; text: string; priority: string; completed: boolean; userId: number }>(
+  completeTodo: (id: number, customMessage: string) =>
+    request<{ id: number; text: string; priority: string; completed: boolean; locked: boolean; userId: number }>(
       `/todos/${id}/complete`,
-      { method: "PATCH" }
+      { method: "PATCH", body: JSON.stringify({ customMessage }) }
     ),
 
   deleteTodo: (id: number) =>

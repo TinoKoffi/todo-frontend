@@ -21,6 +21,7 @@ model Todo {
   text      String
   priority  String   @default("Moyenne")
   completed Boolean  @default(false)
+  locked    Boolean  @default(false)
   createdAt DateTime @default(now())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
