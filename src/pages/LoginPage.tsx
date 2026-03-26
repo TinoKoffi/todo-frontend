@@ -1,7 +1,7 @@
 // src/pages/LoginPage.tsx
 
 import { useState } from "react";
-import { LogIn } from "lucide-react";
+import { LogIn, Eye, EyeOff } from "lucide-react";
 
 type Props = {
   onLogin: (email: string, password: string) => Promise<string | null>;
@@ -12,6 +12,7 @@ type Props = {
 const LoginPage = ({ onLogin, onGoToRegister, loading }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
@@ -36,9 +37,7 @@ const LoginPage = ({ onLogin, onGoToRegister, loading }: Props) => {
 
         {/* Erreur */}
         {error && (
-          <div className="alert alert-error alert-soft text-sm">
-            {error}
-          </div>
+          <div className="alert alert-error alert-soft text-sm">{error}</div>
         )}
 
         {/* Formulaire */}
@@ -48,41 +47,46 @@ const LoginPage = ({ onLogin, onGoToRegister, loading }: Props) => {
             className="input w-full"
             placeholder="Email"
             value={email}
-            onChange={(e) => {
-              setError(null);
-              setEmail(e.target.value);
-            }}
+            onChange={(e) => { setError(null); setEmail(e.target.value); }}
           />
-          <input
-            type="password"
-            className="input w-full"
-            placeholder="Mot de passe"
-            value={password}
-            onChange={(e) => {
-              setError(null);
-              setPassword(e.target.value);
-            }}
-          />
+
+          {/* Mot de passe avec œil */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              className="input w-full pr-10"
+              placeholder="Mot de passe"
+              value={password}
+              onChange={(e) => { setError(null); setPassword(e.target.value); }}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword
+                ? <EyeOff className="w-4 h-4" />
+                : <Eye className="w-4 h-4" />
+              }
+            </button>
+          </div>
+
           <button
             onClick={handleSubmit}
             className="btn btn-primary w-full"
             disabled={loading}
           >
-            {loading ? (
-              <span className="loading loading-spinner loading-sm" />
-            ) : (
-              "Se connecter"
-            )}
+            {loading
+              ? <span className="loading loading-spinner loading-sm" />
+              : "Se connecter"
+            }
           </button>
         </div>
 
         {/* Lien inscription */}
         <p className="text-sm text-center text-base-content/60">
           Pas encore de compte ?{" "}
-          <button
-            onClick={onGoToRegister}
-            className="text-primary hover:underline font-medium"
-          >
+          <button onClick={onGoToRegister} className="text-primary hover:underline font-medium">
             S'inscrire
           </button>
         </p>

@@ -1,7 +1,7 @@
 // src/pages/RegisterPage.tsx
 
 import { useState } from "react";
-import { UserPlus, Check, X } from "lucide-react";
+import { UserPlus, Check, X, Eye, EyeOff } from "lucide-react";
 
 type Props = {
   onRegister: (username: string, email: string, password: string) => Promise<string | null>;
@@ -28,6 +28,8 @@ const RegisterPage = ({ onRegister, onGoToLogin, loading }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showRules, setShowRules] = useState(false);
 
@@ -82,7 +84,7 @@ const RegisterPage = ({ onRegister, onGoToLogin, loading }: Props) => {
             onChange={(e) => { setError(null); setUsername(e.target.value); }}
           />
 
-          {/* Email avec indicateur */}
+          {/* Email */}
           <div className="relative">
             <input
               type="email"
@@ -101,39 +103,60 @@ const RegisterPage = ({ onRegister, onGoToLogin, loading }: Props) => {
             )}
           </div>
 
-          {/* Mot de passe avec règles */}
-          <input
-            type="password"
-            className={`input w-full ${password && (allRulesValid ? "input-success" : "input-error")}`}
-            placeholder="Mot de passe"
-            value={password}
-            onFocus={() => setShowRules(true)}
-            onChange={(e) => { setError(null); setPassword(e.target.value); }}
-          />
+          {/* Mot de passe avec œil */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              className={`input w-full pr-10 ${password && (allRulesValid ? "input-success" : "input-error")}`}
+              placeholder="Mot de passe"
+              value={password}
+              onFocus={() => setShowRules(true)}
+              onChange={(e) => { setError(null); setPassword(e.target.value); }}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword
+                ? <EyeOff className="w-4 h-4" />
+                : <Eye className="w-4 h-4" />
+              }
+            </button>
+          </div>
 
-          {/* Règles du mot de passe */}
+          {/* Règles */}
           {showRules && (
             <ul className="flex flex-col gap-1 text-xs px-1">
               {passwordRules.map((rule) => (
                 <li key={rule.label} className={`flex items-center gap-2 ${rule.test(password) ? "text-success" : "text-base-content/50"}`}>
-                  {rule.test(password)
-                    ? <Check className="w-3 h-3" />
-                    : <X className="w-3 h-3" />
-                  }
+                  {rule.test(password) ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                   {rule.label}
                 </li>
               ))}
             </ul>
           )}
 
-          {/* Confirmation mot de passe */}
-          <input
-            type="password"
-            className={`input w-full ${confirmPassword && (passwordsMatch ? "input-success" : "input-error")}`}
-            placeholder="Confirmer le mot de passe"
-            value={confirmPassword}
-            onChange={(e) => { setError(null); setConfirmPassword(e.target.value); }}
-          />
+          {/* Confirmation mot de passe avec œil */}
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              className={`input w-full pr-10 ${confirmPassword && (passwordsMatch ? "input-success" : "input-error")}`}
+              placeholder="Confirmer le mot de passe"
+              value={confirmPassword}
+              onChange={(e) => { setError(null); setConfirmPassword(e.target.value); }}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/50 hover:text-base-content"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword
+                ? <EyeOff className="w-4 h-4" />
+                : <Eye className="w-4 h-4" />
+              }
+            </button>
+          </div>
 
           <button
             onClick={handleSubmit}
