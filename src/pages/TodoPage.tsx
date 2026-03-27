@@ -22,10 +22,7 @@ const TodoPage = ({ username, onLogout }: Props) => {
 
   // Modal
   const [modalTodoId, setModalTodoId] = useState<number | null>(null);
-  const [customMessage, setCustomMessage] = useState(
-    "Bravo, j'ai terminé cette tâche ! 💪",
-  );
-  const [emailDestinataire, setEmailDestinataire] = useState("");
+  const [customMessage, setCustomMessage] = useState("Bravo, j'ai terminé cette tâche ! 💪");
   const [sendingComplete, setSendingComplete] = useState(false);
 
   useEffect(() => {
@@ -75,7 +72,6 @@ const TodoPage = ({ username, onLogout }: Props) => {
     }
   }
 
-  // Ouvre le modal au lieu de compléter directement
   function openCompleteModal(id: number) {
     setModalTodoId(id);
     setCustomMessage("Bravo, j'ai terminé cette tâche ! 💪");
@@ -85,20 +81,9 @@ const TodoPage = ({ username, onLogout }: Props) => {
     if (!modalTodoId) return;
     setSendingComplete(true);
     try {
-      const updated = await api.completeTodo(modalTodoId, "");
-      setTodos(
-        todos.map((t) => (t.id === modalTodoId ? (updated as Todo) : t)),
-      );
-
-      const todo = todos.find((t) => t.id === modalTodoId);
-      const subject = encodeURIComponent(`✅ Tâche terminée : ${todo?.text}`);
-      const body = encodeURIComponent(
-        `Bonjour !\n\nJ'ai terminé la tâche : "${todo?.text}"\n\n💬 ${customMessage}\n\n🚀 Envoyé depuis ma Todo App`,
-      );
-      window.location.href = `mailto:${emailDestinataire}?subject=${subject}&body=${body}`;
-
+      const updated = await api.completeTodo(modalTodoId, customMessage);
+      setTodos(todos.map((t) => (t.id === modalTodoId ? (updated as Todo) : t)));
       setModalTodoId(null);
-      setEmailDestinataire("");
     } catch (err) {
       console.error("Erreur complétion todo:", err);
     } finally {
@@ -138,6 +123,7 @@ const TodoPage = ({ username, onLogout }: Props) => {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-2xl mx-auto flex flex-col gap-4">
+
         {/* Header */}
         <div className="flex justify-between items-center bg-base-300 p-4 rounded-2xl">
           <h2 className="text-lg font-bold">
@@ -174,11 +160,10 @@ const TodoPage = ({ username, onLogout }: Props) => {
               className="btn btn-primary flex-1"
               disabled={addingTodo}
             >
-              {addingTodo ? (
-                <span className="loading loading-spinner loading-sm" />
-              ) : (
-                "Ajouter"
-              )}
+              {addingTodo
+                ? <span className="loading loading-spinner loading-sm" />
+                : "Ajouter"
+              }
             </button>
           </div>
         </div>
@@ -244,50 +229,29 @@ const TodoPage = ({ username, onLogout }: Props) => {
             </ul>
           ) : (
             <div className="flex justify-center items-center flex-col p-8 gap-2">
-              <Construction
-                strokeWidth={1}
-                className="w-24 h-24 text-primary"
-              />
-              <p className="text-sm text-base-content/60">
-                Aucune tâche pour ce filtre
-              </p>
+              <Construction strokeWidth={1} className="w-24 h-24 text-primary" />
+              <p className="text-sm text-base-content/60">Aucune tâche pour ce filtre</p>
             </div>
           )}
         </div>
+
       </div>
 
-      {/* Modal message personnalisé */}
+      {/* Modal */}
       {modalTodoId && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-base-300 rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4">
+
             <h3 className="text-lg font-bold">🎉 Tâche terminée !</h3>
 
             <p className="text-sm text-base-content/60">
               Tu vas marquer{" "}
-              <span className="text-primary font-medium">
-                "{modalTodo?.text}"
-              </span>{" "}
-              comme terminée. Un email de félicitations sera envoyé sur ton
-              adresse mail.
+              <span className="text-primary font-medium">"{modalTodo?.text}"</span>{" "}
+              comme terminée. Un email de félicitations sera envoyé sur ton adresse mail.
             </p>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">
-                Email destinataire :
-              </label>
-              <input
-                type="email"
-                className="input w-full"
-                placeholder="ex: ami@gmail.com"
-                value={emailDestinataire}
-                onChange={(e) => setEmailDestinataire(e.target.value)}
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">
-                Ton message personnel :
-              </label>
+              <label className="text-sm font-medium">Ton message personnel :</label>
               <textarea
                 className="textarea w-full"
                 rows={3}
@@ -310,16 +274,17 @@ const TodoPage = ({ username, onLogout }: Props) => {
                 className="btn btn-primary flex-1"
                 disabled={sendingComplete}
               >
-                {sendingComplete ? (
-                  <span className="loading loading-spinner loading-sm" />
-                ) : (
-                  "Confirmer ✅"
-                )}
+                {sendingComplete
+                  ? <span className="loading loading-spinner loading-sm" />
+                  : "Confirmer ✅"
+                }
               </button>
             </div>
+
           </div>
         </div>
       )}
+
     </div>
   );
 };
