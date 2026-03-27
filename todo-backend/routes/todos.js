@@ -3,7 +3,6 @@
 const express = require("express");
 const prisma = require("../database");
 const authMiddleware = require("../middleware/auth");
-const { sendCompletionEmail } = require("../mailer");
 
 const router = express.Router();
 
@@ -72,30 +71,16 @@ router.put("/:id", async (req, res) => {
 // PATCH /todos/:id/complete
 router.patch("/:id/complete", async (req, res) => {
   const id = parseInt(req.params.id);
-  const { customMessage } = req.body;
 
   try {
     const todo = await prisma.todo.findUnique({ where: { id } });
     if (!todo || todo.userId !== req.userId) {
       return res.status(404).json({ error: "Todo introuvable." });
     }
-
     const updated = await prisma.todo.update({
       where: { id },
       data: { completed: true, locked: true },
     });
-
-    // Envoyer l'email
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (user) {
-      await sendCompletionEmail(
-        user.email,
-        user.username,
-        todo.text,
-        customMessage || "Bravo, continue comme ça ! 💪"
-      );
-    }
-
     res.json(updated);
   } catch {
     res.status(500).json({ error: "Erreur serveur." });

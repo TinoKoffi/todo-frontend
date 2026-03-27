@@ -79,18 +79,27 @@ const TodoPage = ({ username, onLogout }: Props) => {
   }
 
   async function confirmComplete() {
-    if (!modalTodoId) return;
-    setSendingComplete(true);
-    try {
-      const updated = await api.completeTodo(modalTodoId, customMessage);
-      setTodos(todos.map((t) => (t.id === modalTodoId ? (updated as Todo) : t)));
-      setModalTodoId(null);
-    } catch (err) {
-      console.error("Erreur complétion todo:", err);
-    } finally {
-      setSendingComplete(false);
-    }
+  if (!modalTodoId) return;
+  setSendingComplete(true);
+  try {
+    const updated = await api.completeTodo(modalTodoId, "");
+    setTodos(todos.map((t) => (t.id === modalTodoId ? (updated as Todo) : t)));
+
+    // Ouvrir le client mail avec mailto:
+    const todo = todos.find((t) => t.id === modalTodoId);
+    const subject = encodeURIComponent(`✅ Tâche terminée : ${todo?.text}`);
+    const body = encodeURIComponent(
+      `Bonjour !\n\nJ'ai terminé la tâche : "${todo?.text}"\n\n💬 ${customMessage}\n\n🚀 Envoyé depuis ma Todo App`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+
+    setModalTodoId(null);
+  } catch (err) {
+    console.error("Erreur complétion todo:", err);
+  } finally {
+    setSendingComplete(false);
   }
+}
 
   function toggleSelectTodo(id: number) {
     const newSelected = new Set(selectedTodos);
