@@ -71,17 +71,30 @@ router.put("/:id", async (req, res) => {
 // PATCH /todos/:id/complete
 router.patch("/:id/complete", async (req, res) => {
   const id = parseInt(req.params.id);
+  const { customMessage } = req.body;
 
   try {
     const todo = await prisma.todo.findUnique({ where: { id } });
     if (!todo || todo.userId !== req.userId) {
       return res.status(404).json({ error: "Todo introuvable." });
     }
+
     const updated = await prisma.todo.update({
       where: { id },
       data: { completed: true, locked: true },
     });
+
+    // Répondre immédiatement
     res.json(updated);
+
+    // Envoyer email en arrière-plan
+    sendCompletionEmail(
+      null,
+      "Tino",
+      todo.text,
+      customMessage || "Bravo, continue comme ça ! 💪"
+    ).catch((err) => console.error("Erreur email:", err));
+
   } catch {
     res.status(500).json({ error: "Erreur serveur." });
   }
